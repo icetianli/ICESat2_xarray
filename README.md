@@ -1,14 +1,14 @@
-# Zarr_ICESat2
+# ICESat2_xarray
 
-Transform ICESat-2 hdf5 files into different formats using intake
+Work with ICESat-2 altimetry data in xarray and intake
 
-### Goals:
+### Goal:
 
-- [x] Convert multiple hdf5 files into xarray dataset
+- [x] Combine multiple hdf5 files into xarray dataset
 - [x] Streamline data loading from local hdf5 files to xarray dataset via intake
-- [ ] Streamline data loading remote server to xarray dataset via intake 
 - [x] Flexible data visualization defined by common parameters: RGT or Cycle 
-- [ ] Simple data manipulation in xarray
+- [ ] Streamline data loading from remote server to xarray dataset via intake 
+- [ ] Data manipulation in xarray
 
 ### Resources
 - [Zarr](https://zarr.readthedocs.io/en/stable/tutorial.html#)
