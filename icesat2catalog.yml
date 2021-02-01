@@ -1,0 +1,100 @@
+metadata:
+  description: 'An intake catalog for loading ICESat-2 ATLAS datasets'
+  version: 1
+
+plugins:
+  source:
+    - module: intake_xarray
+    - module: intake_geopandas
+    - module: zarr_cat
+  
+sources:
+
+  atl06_h5:
+    # based on https://github.com/icesat2py/icepyx/issues/106 by Wei Ji
+    description: 'Reads in ICESat-2 ATL06 hdf5 data files into xarray.Dataset, one beam at a time'
+    driver: intake_xarray.netcdf.NetCDFSource
+    args:
+      urlpath: /Users/lt/Desktop/Intake_TEST/ATL06_RAW/processed_ATL06_*_{{rgt}}{{cycle}}{{orbitsegment}}_003_0*.h5
+      path_as_pattern: processed_ATL06_{datetime:%Y%m%d%H%M%S}_{rgt:4}{cycle:2}{orbitsegment:2}_{version:3}_{revision:2}.h5
+      chunks:
+        delta_time: 500
+      xarray_kwargs:
+        combine: by_coords
+        engine: h5netcdf
+        group: /{{laser}}/land_ice_segments
+        mask_and_scale: true
+        parallel: true
+    # https://intake.readthedocs.io/en/latest/catalog.html#parameter-definition
+    parameters:
+        rgt:
+          description: ICESat-2 Reference Ground Track number
+          type: str
+          default: '0598'  # NEED TO BE IMPROVED !!!
+          allowed: ['0598', '0095', '0406', '0537', '0659', '0467', '0467', '0156', '0598']
+        cycle:
+          description: Cycle number
+          type: str
+          default: "09"
+          allowed: ["01","02","03","04","05","06","07","08","09"]
+        orbitsegment:
+          description: Orbital Segment
+          type: str
+          default: 11
+          allowed: [10, 11, 12]
+        laser:
+          description: Laser Beam Number
+          type: str
+          default: gt1l
+          allowed: ["gt1l", "gt1r", "gt2l", "gt2r", "gt3l", "gt3r"]
+
+  atl06_landiceseg_gt:
+    # https://intake-xarray.readthedocs.io/en/latest/api.html#intake_xarray.netcdf.NetCDFSource
+    description: 'Read ICESat-2 ATL06 variables in land_ice_segments into xarray.Dataset, one beam at a time'
+    driver: intake_xarray.netcdf.NetCDFSource
+    args:
+      urlpath: /Users/lt/Desktop/Intake_TEST/test/processed_ATL06_*_*_003_*.h5
+      path_as_pattern: processed_ATL06_{datetime:%Y%m%d%H%M%S}_{rgt:4}{cycle:2}{orbitsegment:2}_{version:3}_{revision:2}.h5
+      chunks:
+        delta_time: 500
+      xarray_kwargs:
+        combine: by_coords
+        engine: h5netcdf
+        group: /{{laser}}/land_ice_segments
+        mask_and_scale: true
+        parallel: true
+    parameters:
+        laser:
+          description: Laser Beam Number
+          type: str
+          default: gt1l
+          allowed: ["gt1l", "gt1r", "gt2l", "gt2r", "gt3l", "gt3r"]
+          
+          
+  icesat2_zarrcat:
+    description: 'read icesat-2 files in zarr format'
+    driver: zarr_cat
+    args:
+      urlpath: '/Users/lt/Desktop/Intake_TEST/atl06.zarr'
+      consolidated: False
+
+      
+  icesat2_zarrxr:
+    # http://xarray.pydata.org/en/stable/generated/xarray.open_zarr.html
+    description: 'ICESat-2 atl06 in zarr via xarray'
+    driver: intake_xarray.xzarr.ZarrSource
+    args:
+      urlpath: '/Users/lt/Desktop/Intake_TEST/atl06.zarr'
+      consolidated: false
+      chunks: 
+        segment_id: 500
+      mask_and_scale: true
+    metadata:
+      plots:
+        elev_scatter:
+          kind: scatter
+          x: latitude
+          y: longitude
+          c: h_li
+          width: 500
+          height: 500
